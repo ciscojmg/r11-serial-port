@@ -1,0 +1,44 @@
+# Dependencias
+node_modules/
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+
+# Archivos de ambiente
+.env
+.env.local
+.env.*.local
+
+# Archivos del sistema
+.DS_Store
+Thumbs.db
+
+# Directorios de logs
+logs
+*.log
+
+# Directorios de construcción
+/dist
+/build
+
+# Archivos de cobertura
+coverage/
+
+# IDE - VSCode
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# IDE - WebStorm/IntelliJ
+.idea/
+*.iml
+*.iws
+
+# Archivos temporales
+*.swp
+*.swo
+.tmp
+*.tmp
+*.temp 

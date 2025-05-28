@@ -66,6 +66,57 @@
                     </div>
                 </div>
 
+                <!-- Comandos Predefinidos -->
+                <div class="mb-8">
+                    <h3 class="text-xl font-semibold mb-4">Comandos Predefinidos</h3>
+                    <div class="grid grid-cols-1 gap-4">
+                        <div class="bg-gray-50 rounded-lg p-4">
+                            <div class="flex justify-between items-start mb-2">
+                                <div>
+                                    <h4 class="font-semibold">Localización Inmediata (LJDW)</h4>
+                                    <p class="text-sm text-gray-600">Solicita la posición GPS actual del dispositivo (Protocolo binario)</p>
+                                </div>
+                                <button id="sendLocationCmd" class="bg-indigo-500 text-white px-4 py-2 rounded hover:bg-indigo-600">
+                                    Enviar
+                                </button>
+                            </div>
+                            <div class="font-mono text-sm bg-gray-100 p-2 rounded">
+                                78 78 0D 80 00 01 4C 4A 44 57 00 01 62 0C 0D 0A
+                            </div>
+                        </div>
+
+                        <div class="bg-gray-50 rounded-lg p-4">
+                            <div class="flex justify-between items-start mb-2">
+                                <div>
+                                    <h4 class="font-semibold">Localización WHERE</h4>
+                                    <p class="text-sm text-gray-600">Solicita la posición GPS actual del dispositivo (Comando ASCII)</p>
+                                </div>
+                                <button id="sendWhereCmd" class="bg-indigo-500 text-white px-4 py-2 rounded hover:bg-indigo-600">
+                                    Enviar
+                                </button>
+                            </div>
+                            <div class="font-mono text-sm bg-gray-100 p-2 rounded">
+                                WHERE#
+                            </div>
+                        </div>
+
+                        <div class="bg-gray-50 rounded-lg p-4">
+                            <div class="flex justify-between items-start mb-2">
+                                <div>
+                                    <h4 class="font-semibold">Test SMS WHERE</h4>
+                                    <p class="text-sm text-gray-600">Prueba de comando SMS para solicitud de ubicación</p>
+                                </div>
+                                <button id="sendSmsTestCmd" class="bg-indigo-500 text-white px-4 py-2 rounded hover:bg-indigo-600">
+                                    Enviar
+                                </button>
+                            </div>
+                            <div class="font-mono text-sm bg-gray-100 p-2 rounded">
+                                AT%TEST=SMS[][WHERE#]
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Envío de Tramas -->
                 <div class="mb-8">
                     <h3 class="text-xl font-semibold mb-4">Enviar Trama</h3>

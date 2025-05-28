@@ -70,16 +70,31 @@ app.post('/api/connect', async (req, res) => {
 
 // Ruta para enviar datos al puerto serial
 app.post('/api/send', (req, res) => {
-    const { data } = req.body;
+    const { data, isHex } = req.body;
     
     if (!serialConnection) {
         return res.status(400).json({ error: 'Puerto serial no conectado' });
     }
 
     try {
-        serialConnection.write(data);
-        res.json({ message: 'Datos enviados exitosamente' });
+        let dataToSend;
+        if (isHex) {
+            // Convertir string hexadecimal a Buffer
+            dataToSend = Buffer.from(data.replace(/\s+/g, ''), 'hex');
+        } else {
+            // Datos normales como string
+            dataToSend = data;
+        }
+
+        serialConnection.write(dataToSend, (err) => {
+            if (err) {
+                console.error('Error al escribir en el puerto:', err);
+                return res.status(500).json({ error: err.message });
+            }
+            res.json({ message: 'Datos enviados exitosamente' });
+        });
     } catch (error) {
+        console.error('Error al enviar datos:', error);
         res.status(500).json({ error: error.message });
     }
 });

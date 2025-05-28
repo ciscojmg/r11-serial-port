@@ -8,6 +8,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const sendBtn = document.getElementById('sendBtn');
     const sendData = document.getElementById('sendData');
     const receivedData = document.getElementById('receivedData');
+    const sendLocationCmd = document.getElementById('sendLocationCmd');
+    const sendWhereCmd = document.getElementById('sendWhereCmd');
+    const sendSmsTestCmd = document.getElementById('sendSmsTestCmd');
 
     // Referencias a elementos del dashboard
     const dashboardElements = {
@@ -30,6 +33,25 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Inicializar Socket.IO
     const socket = io();
+
+    // Definición de comandos predefinidos
+    const predefinedCommands = {
+        locationCommand: {
+            hex: '78780D8000014C4A44570001620C0D0A',
+            description: 'Solicitud de localización inmediata (LJDW)',
+            isHex: true
+        },
+        whereCommand: {
+            data: 'WHERE#\r\n',
+            description: 'Solicitud de localización (WHERE)',
+            isHex: false
+        },
+        smsTestCommand: {
+            data: 'AT%TEST=SMS[][WHERE#]\r\n',
+            description: 'Prueba de comando SMS para solicitud de ubicación',
+            isHex: false
+        }
+    };
 
     // Función para procesar las tramas recibidas
     function processFrame(data) {
@@ -255,7 +277,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ data })
+                body: JSON.stringify({ 
+                    data: data,
+                    isHex: false 
+                })
             });
 
             if (!response.ok) throw new Error('Error al enviar datos');
@@ -276,11 +301,58 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // Función para enviar comandos
+    async function sendCommand(command) {
+        if (!isConnected) {
+            alert('Por favor conecte el puerto primero');
+            return;
+        }
+
+        try {
+            const response = await fetch('/api/send', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ 
+                    data: command.isHex ? command.hex : command.data,
+                    isHex: command.isHex
+                })
+            });
+
+            if (!response.ok) throw new Error('Error al enviar comando');
+
+            // Agregar el mensaje enviado al área de visualización
+            const messageElement = document.createElement('div');
+            messageElement.className = 'text-purple-600 mb-1';
+            messageElement.textContent = `Comando enviado: ${command.description}`;
+            receivedData.appendChild(messageElement);
+            receivedData.scrollTop = receivedData.scrollHeight;
+
+        } catch (error) {
+            console.error('Error al enviar comando:', error);
+            alert('Error al enviar el comando');
+        }
+    }
+
     // Event Listeners
     connectBtn.addEventListener('click', toggleConnection);
     sendBtn.addEventListener('click', sendDataToPort);
     sendData.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') sendDataToPort();
+    });
+
+    // Event listeners para los comandos predefinidos
+    sendLocationCmd.addEventListener('click', () => {
+        sendCommand(predefinedCommands.locationCommand);
+    });
+
+    sendWhereCmd.addEventListener('click', () => {
+        sendCommand(predefinedCommands.whereCommand);
+    });
+
+    sendSmsTestCmd.addEventListener('click', () => {
+        sendCommand(predefinedCommands.smsTestCommand);
     });
 
     // Cargar puertos al iniciar

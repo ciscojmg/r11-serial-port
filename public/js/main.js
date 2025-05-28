@@ -9,10 +9,112 @@ document.addEventListener('DOMContentLoaded', () => {
     const sendData = document.getElementById('sendData');
     const receivedData = document.getElementById('receivedData');
 
+    // Referencias a elementos del dashboard
+    const dashboardElements = {
+        imei: document.getElementById('imei'),
+        version: document.getElementById('version'),
+        imsi: document.getElementById('imsi'),
+        iccid: document.getElementById('iccid'),
+        gpsStatus: document.getElementById('gps-status'),
+        gsmStatus: document.getElementById('gsm-status'),
+        serverStatus: document.getElementById('server-status'),
+        batteryStatus: document.getElementById('battery-status'),
+        adcStatus: document.getElementById('adc-status'),
+        accStatus: document.getElementById('acc-status'),
+        gpsTime: document.getElementById('gps-time'),
+        systemTime: document.getElementById('system-time'),
+        serverConnection: document.getElementById('server-connection')
+    };
+
     let isConnected = false;
     
     // Inicializar Socket.IO
     const socket = io();
+
+    // Función para procesar las tramas recibidas
+    function processFrame(data) {
+        const line = data.trim();
+        
+        // Extraer valores usando expresiones regulares
+        const imeiMatch = line.match(/\[  IMEI   \]-> (\d+)/);
+        const versionMatch = line.match(/\[ VERSION \]-> (.+)/);
+        const imsiMatch = line.match(/\[  IMSI   \]-> (.+)/);
+        const iccidMatch = line.match(/\[  ICCID  \]-> (.+)/);
+        const ipPortMatch = line.match(/\[ IP&PORT \]-> (.+)/);
+        const gpsStatusMatch = line.match(/\[==   GPS   ==\] ->     < (.+) >/);
+        const gsmStatusMatch = line.match(/\[==   GSM   ==\] ->     < (.+) >/);
+        const serverStatusMatch = line.match(/\[== SERVER  ==\] ->     < (.+) >/);
+        const accStatusMatch = line.match(/\[==   ACC   ==\] ->     < (.+) >/);
+        const adcBatMatch = line.match(/\[== ADC\+BAT ==\] ->  \[ (.+),(.+) \]/);
+        const gpsTimeMatch = line.match(/\[== GPS TIME==\] ->  \[  (.+)  \]/);
+        const systemTimeMatch = line.match(/\[==SYTEMTIME==\] ->  \[(.+)\]/);
+
+        // Actualizar el dashboard
+        if (imeiMatch) {
+            dashboardElements.imei.textContent = imeiMatch[1];
+        }
+        if (versionMatch) {
+            dashboardElements.version.textContent = versionMatch[1];
+        }
+        if (imsiMatch) {
+            dashboardElements.imsi.textContent = imsiMatch[1] || 'No disponible';
+        }
+        if (iccidMatch) {
+            dashboardElements.iccid.textContent = iccidMatch[1] || 'No disponible';
+        }
+        if (gpsStatusMatch) {
+            const status = gpsStatusMatch[1];
+            dashboardElements.gpsStatus.textContent = status;
+            dashboardElements.gpsStatus.className = getStatusClass(status);
+        }
+        if (gsmStatusMatch) {
+            const status = gsmStatusMatch[1];
+            dashboardElements.gsmStatus.textContent = status;
+            dashboardElements.gsmStatus.className = getStatusClass(status);
+        }
+        if (serverStatusMatch) {
+            const status = serverStatusMatch[1];
+            dashboardElements.serverStatus.textContent = status;
+            dashboardElements.serverStatus.className = getStatusClass(status);
+        }
+        if (accStatusMatch) {
+            const status = accStatusMatch[1];
+            dashboardElements.accStatus.textContent = status;
+            dashboardElements.accStatus.className = getStatusClass(status);
+        }
+        if (adcBatMatch) {
+            dashboardElements.adcStatus.textContent = `${adcBatMatch[1]}V`;
+            dashboardElements.batteryStatus.textContent = `${adcBatMatch[2]}V`;
+        }
+        if (gpsTimeMatch) {
+            dashboardElements.gpsTime.textContent = gpsTimeMatch[1];
+        }
+        if (systemTimeMatch) {
+            dashboardElements.systemTime.textContent = systemTimeMatch[1];
+        }
+        if (ipPortMatch) {
+            dashboardElements.serverConnection.textContent = ipPortMatch[1];
+        }
+    }
+
+    // Función para determinar la clase CSS según el estado
+    function getStatusClass(status) {
+        const baseClasses = 'mt-2 text-lg font-semibold';
+        switch (status.toUpperCase()) {
+            case 'OK':
+            case 'ON':
+                return `${baseClasses} text-green-600`;
+            case 'LOW':
+            case 'OFF':
+                return `${baseClasses} text-red-600`;
+            case 'SRH':
+                return `${baseClasses} text-yellow-600`;
+            case 'CHK':
+                return `${baseClasses} text-blue-600`;
+            default:
+                return `${baseClasses} text-gray-600`;
+        }
+    }
 
     // Escuchar datos del puerto serial
     socket.on('serialData', (data) => {
@@ -21,6 +123,9 @@ document.addEventListener('DOMContentLoaded', () => {
         messageElement.textContent = data;
         receivedData.appendChild(messageElement);
         receivedData.scrollTop = receivedData.scrollHeight;
+
+        // Procesar la trama para actualizar el dashboard
+        processFrame(data);
     });
 
     // Cargar la lista de puertos disponibles
@@ -113,6 +218,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 messageElement.className = 'text-red-600 mb-2';
                 messageElement.textContent = 'Desconectado del puerto serial';
                 receivedData.appendChild(messageElement);
+
+                // Resetear valores del dashboard
+                Object.values(dashboardElements).forEach(element => {
+                    if (element) {
+                        element.textContent = '-';
+                        if (element.className.includes('text-')) {
+                            element.className = 'mt-2 text-lg font-semibold text-gray-600';
+                        }
+                    }
+                });
 
             } catch (error) {
                 console.error('Error al desconectar:', error);

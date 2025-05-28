@@ -8,73 +8,154 @@
     <script src="/socket.io/socket.io.js"></script>
 </head>
 <body class="bg-gray-100 min-h-screen p-8">
-    <div class="max-w-4xl mx-auto bg-white rounded-lg shadow-lg p-6">
+    <div class="max-w-7xl mx-auto">
         <h1 class="text-3xl font-bold text-center mb-8">R11 Serial Port Interface</h1>
 
-        <!-- Configuración del Puerto Serial -->
-        <div class="mb-8">
-            <h2 class="text-xl font-semibold mb-4">Configuración del Puerto</h2>
-            <div class="grid grid-cols-2 gap-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">Puerto</label>
-                    <select id="portSelect" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-                        <option value="">Seleccionar puerto...</option>
-                    </select>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Panel de Control -->
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h2 class="text-2xl font-semibold mb-6">Panel de Control</h2>
+                
+                <!-- Configuración del Puerto Serial -->
+                <div class="mb-8">
+                    <h3 class="text-xl font-semibold mb-4">Configuración del Puerto</h3>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Puerto</label>
+                            <select id="portSelect" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                <option value="">Seleccionar puerto...</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Baudios</label>
+                            <select id="baudRate" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                <option value="9600">9600</option>
+                                <option value="19200">19200</option>
+                                <option value="38400">38400</option>
+                                <option value="57600">57600</option>
+                                <option value="115200">115200</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Bits de Datos</label>
+                            <select id="dataBits" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                <option value="8">8</option>
+                                <option value="7">7</option>
+                                <option value="6">6</option>
+                                <option value="5">5</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Bits de Parada</label>
+                            <select id="stopBits" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                <option value="1">1</option>
+                                <option value="2">2</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Paridad</label>
+                            <select id="parity" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                <option value="none">Ninguna</option>
+                                <option value="even">Par</option>
+                                <option value="odd">Impar</option>
+                            </select>
+                        </div>
+                        <div class="flex items-end">
+                            <button id="connectBtn" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Conectar</button>
+                        </div>
+                    </div>
                 </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">Baudios</label>
-                    <select id="baudRate" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-                        <option value="9600">9600</option>
-                        <option value="19200">19200</option>
-                        <option value="38400">38400</option>
-                        <option value="57600">57600</option>
-                        <option value="115200">115200</option>
-                    </select>
+
+                <!-- Envío de Tramas -->
+                <div class="mb-8">
+                    <h3 class="text-xl font-semibold mb-4">Enviar Trama</h3>
+                    <div class="flex gap-4">
+                        <input type="text" id="sendData" class="flex-1 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" placeholder="Ingrese la trama a enviar...">
+                        <button id="sendBtn" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">Enviar</button>
+                    </div>
                 </div>
+
+                <!-- Recepción de Tramas -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700">Bits de Datos</label>
-                    <select id="dataBits" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-                        <option value="8">8</option>
-                        <option value="7">7</option>
-                        <option value="6">6</option>
-                        <option value="5">5</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">Bits de Parada</label>
-                    <select id="stopBits" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-                        <option value="1">1</option>
-                        <option value="2">2</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">Paridad</label>
-                    <select id="parity" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-                        <option value="none">Ninguna</option>
-                        <option value="even">Par</option>
-                        <option value="odd">Impar</option>
-                    </select>
-                </div>
-                <div class="flex items-end">
-                    <button id="connectBtn" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Conectar</button>
+                    <h3 class="text-xl font-semibold mb-4">Tramas Recibidas</h3>
+                    <div id="receivedData" class="h-96 overflow-y-auto p-4 bg-gray-50 rounded-md border border-gray-300 font-mono text-sm">
+                        <!-- Aquí se mostrarán las tramas recibidas -->
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Envío de Tramas -->
-        <div class="mb-8">
-            <h2 class="text-xl font-semibold mb-4">Enviar Trama</h2>
-            <div class="flex gap-4">
-                <input type="text" id="sendData" class="flex-1 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" placeholder="Ingrese la trama a enviar...">
-                <button id="sendBtn" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">Enviar</button>
-            </div>
-        </div>
+            <!-- Dashboard de Estado -->
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h2 class="text-2xl font-semibold mb-6">Estado del Dispositivo</h2>
+                
+                <!-- Información del Dispositivo -->
+                <div class="grid grid-cols-2 gap-4 mb-8">
+                    <div class="col-span-2 bg-gray-50 rounded-lg p-4">
+                        <h3 class="text-lg font-semibold mb-2">Identificación</h3>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <span class="text-gray-600 text-sm">IMEI:</span>
+                                <div id="imei" class="font-mono">-</div>
+                            </div>
+                            <div>
+                                <span class="text-gray-600 text-sm">Versión:</span>
+                                <div id="version" class="font-mono">-</div>
+                            </div>
+                            <div>
+                                <span class="text-gray-600 text-sm">IMSI:</span>
+                                <div id="imsi" class="font-mono">-</div>
+                            </div>
+                            <div>
+                                <span class="text-gray-600 text-sm">ICCID:</span>
+                                <div id="iccid" class="font-mono">-</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-        <!-- Recepción de Tramas -->
-        <div>
-            <h2 class="text-xl font-semibold mb-4">Tramas Recibidas</h2>
-            <div id="receivedData" class="h-96 overflow-y-auto p-4 bg-gray-50 rounded-md border border-gray-300 font-mono text-sm">
-                <!-- Aquí se mostrarán las tramas recibidas -->
+                <!-- Estado de Sistemas -->
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-8">
+                    <div class="bg-gray-50 rounded-lg p-4 text-center">
+                        <span class="text-sm text-gray-600">GPS</span>
+                        <div id="gps-status" class="mt-2 text-lg font-semibold">-</div>
+                    </div>
+                    <div class="bg-gray-50 rounded-lg p-4 text-center">
+                        <span class="text-sm text-gray-600">GSM</span>
+                        <div id="gsm-status" class="mt-2 text-lg font-semibold">-</div>
+                    </div>
+                    <div class="bg-gray-50 rounded-lg p-4 text-center">
+                        <span class="text-sm text-gray-600">Servidor</span>
+                        <div id="server-status" class="mt-2 text-lg font-semibold">-</div>
+                    </div>
+                    <div class="bg-gray-50 rounded-lg p-4 text-center">
+                        <span class="text-sm text-gray-600">Batería</span>
+                        <div id="battery-status" class="mt-2 text-lg font-semibold">-</div>
+                    </div>
+                    <div class="bg-gray-50 rounded-lg p-4 text-center">
+                        <span class="text-sm text-gray-600">Entrada ADC</span>
+                        <div id="adc-status" class="mt-2 text-lg font-semibold">-</div>
+                    </div>
+                    <div class="bg-gray-50 rounded-lg p-4 text-center">
+                        <span class="text-sm text-gray-600">ACC</span>
+                        <div id="acc-status" class="mt-2 text-lg font-semibold">-</div>
+                    </div>
+                </div>
+
+                <!-- Tiempo y Conexión -->
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <h3 class="text-lg font-semibold mb-2">Tiempo GPS</h3>
+                        <div id="gps-time" class="font-mono">-</div>
+                    </div>
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <h3 class="text-lg font-semibold mb-2">Tiempo Sistema</h3>
+                        <div id="system-time" class="font-mono">-</div>
+                    </div>
+                    <div class="col-span-2 bg-gray-50 rounded-lg p-4">
+                        <h3 class="text-lg font-semibold mb-2">Conexión Servidor</h3>
+                        <div id="server-connection" class="font-mono">-</div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

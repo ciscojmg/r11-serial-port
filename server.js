@@ -2,12 +2,26 @@ const express = require('express');
 const { SerialPort } = require('serialport');
 const { ReadlineParser } = require('@serialport/parser-readline');
 const path = require('path');
+const { createServer } = require('http');
+const { Server } = require('socket.io');
 
 const app = express();
+const httpServer = createServer(app);
+const io = new Server(httpServer);
+
 const port = 3000;
 
 app.use(express.json());
 app.use(express.static('public'));
+
+// Socket.IO connection handler
+io.on('connection', (socket) => {
+    console.log('Cliente conectado');
+    
+    socket.on('disconnect', () => {
+        console.log('Cliente desconectado');
+    });
+});
 
 // Ruta para obtener la lista de puertos seriales disponibles
 app.get('/api/ports', async (req, res) => {
@@ -44,7 +58,8 @@ app.post('/api/connect', async (req, res) => {
 
         parser.on('data', (data) => {
             console.log('Datos recibidos:', data);
-            // Aquí puedes implementar WebSocket para enviar los datos al cliente en tiempo real
+            // Emitir los datos a todos los clientes conectados
+            io.emit('serialData', data);
         });
 
         res.json({ message: 'Conexión establecida exitosamente' });
@@ -81,6 +96,6 @@ app.post('/api/disconnect', (req, res) => {
     }
 });
 
-app.listen(port, () => {
+httpServer.listen(port, () => {
     console.log(`Servidor corriendo en http://localhost:${port}`);
 }); 

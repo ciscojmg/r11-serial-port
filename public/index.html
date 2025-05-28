@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>R11 Serial Port Interface</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="/socket.io/socket.io.js"></script>
 </head>
 <body class="bg-gray-100 min-h-screen p-8">
     <div class="max-w-4xl mx-auto bg-white rounded-lg shadow-lg p-6">
@@ -72,7 +73,7 @@
         <!-- Recepción de Tramas -->
         <div>
             <h2 class="text-xl font-semibold mb-4">Tramas Recibidas</h2>
-            <div id="receivedData" class="h-48 overflow-y-auto p-4 bg-gray-50 rounded-md border border-gray-300">
+            <div id="receivedData" class="h-96 overflow-y-auto p-4 bg-gray-50 rounded-md border border-gray-300 font-mono text-sm">
                 <!-- Aquí se mostrarán las tramas recibidas -->
             </div>
         </div>

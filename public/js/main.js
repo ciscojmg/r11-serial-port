@@ -10,6 +10,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const receivedData = document.getElementById('receivedData');
 
     let isConnected = false;
+    
+    // Inicializar Socket.IO
+    const socket = io();
+
+    // Escuchar datos del puerto serial
+    socket.on('serialData', (data) => {
+        const messageElement = document.createElement('div');
+        messageElement.className = 'text-green-600 mb-1';
+        messageElement.textContent = data;
+        receivedData.appendChild(messageElement);
+        receivedData.scrollTop = receivedData.scrollHeight;
+    });
 
     // Cargar la lista de puertos disponibles
     async function loadPorts() {
@@ -69,6 +81,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 stopBits.disabled = true;
                 parity.disabled = true;
 
+                // Limpiar el área de mensajes al conectar
+                receivedData.innerHTML = '<div class="text-blue-600 mb-2">Conexión establecida...</div>';
+
             } catch (error) {
                 console.error('Error al conectar:', error);
                 alert('Error al establecer la conexión');
@@ -92,6 +107,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 dataBits.disabled = false;
                 stopBits.disabled = false;
                 parity.disabled = false;
+
+                // Agregar mensaje de desconexión
+                const messageElement = document.createElement('div');
+                messageElement.className = 'text-red-600 mb-2';
+                messageElement.textContent = 'Desconectado del puerto serial';
+                receivedData.appendChild(messageElement);
 
             } catch (error) {
                 console.error('Error al desconectar:', error);
@@ -129,7 +150,7 @@ document.addEventListener('DOMContentLoaded', () => {
             
             // Agregar el mensaje enviado al área de visualización
             const messageElement = document.createElement('div');
-            messageElement.className = 'text-blue-600 mb-2';
+            messageElement.className = 'text-blue-600 mb-1';
             messageElement.textContent = `Enviado: ${data}`;
             receivedData.appendChild(messageElement);
             receivedData.scrollTop = receivedData.scrollHeight;

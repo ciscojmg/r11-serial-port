@@ -57,8 +57,6 @@ app.post('/api/connect', async (req, res) => {
         parser = serialConnection.pipe(new ReadlineParser({ delimiter: '\r\n' }));
 
         parser.on('data', (data) => {
-            // console.log('Datos recibidos:', data);
-            // Emitir los datos a todos los clientes conectados
             io.emit('serialData', data);
         });
 

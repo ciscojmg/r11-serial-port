@@ -11,6 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const sendLocationCmd = document.getElementById('sendLocationCmd');
     const sendWhereCmd = document.getElementById('sendWhereCmd');
     const sendSmsTestCmd = document.getElementById('sendSmsTestCmd');
+    const clearBtn = document.getElementById('clearBtn');
 
     // Referencias a elementos del dashboard
     const dashboardElements = {
@@ -30,6 +31,8 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     let isConnected = false;
+    let shouldAutoScroll = true;
+    let lastScrollHeight = 0;
     
     // Inicializar Socket.IO
     const socket = io();
@@ -137,6 +140,49 @@ document.addEventListener('DOMContentLoaded', () => {
                 return `${baseClasses} text-gray-600`;
         }
     }
+
+    // Función para manejar el auto-scroll
+    function handleScroll() {
+        const currentScroll = receivedData.scrollTop + receivedData.clientHeight;
+        const scrollDiff = Math.abs(currentScroll - lastScrollHeight);
+        
+        if (scrollDiff > 30) {
+            shouldAutoScroll = (currentScroll >= receivedData.scrollHeight - 50);
+        }
+        
+        lastScrollHeight = receivedData.scrollHeight;
+    }
+
+    // Función para agregar mensajes al área de recepción
+    function appendMessage(message, className = '') {
+        const messageElement = document.createElement('div');
+        messageElement.className = className + ' mb-1';
+        messageElement.textContent = message;
+        receivedData.appendChild(messageElement);
+        
+        // Auto-scroll solo si estamos cerca del final
+        const isNearBottom = receivedData.scrollHeight - receivedData.scrollTop - receivedData.clientHeight < 100;
+        if (isNearBottom) {
+            receivedData.scrollTop = receivedData.scrollHeight;
+        }
+    }
+
+    // Event listener para el scroll
+    receivedData.addEventListener('scroll', handleScroll);
+
+    // Event listener para el botón de limpieza
+    clearBtn.addEventListener('click', () => {
+        receivedData.innerHTML = '';
+    });
+
+    // Manejo de conexión Socket.IO
+    socket.on('connect', () => {
+        appendMessage('WebSocket conectado', 'text-gray-600');
+    });
+
+    socket.on('disconnect', () => {
+        appendMessage('WebSocket desconectado', 'text-gray-600');
+    });
 
     // Escuchar datos del puerto serial
     socket.on('serialData', (data) => {
@@ -263,7 +309,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return /^[0-9A-Fa-f]+$/.test(str.replace(/\s/g, ''));
     }
 
-    // Enviar datos
+    // Función para enviar datos
     async function sendDataToPort() {
         if (!isConnected) {
             alert('Por favor conecte el puerto primero');
@@ -285,9 +331,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     alert('Por favor ingrese datos hexadecimales válidos (0-9, A-F)');
                     return;
                 }
-                dataToSend = data.replace(/\s/g, ''); // Remover espacios en blanco
+                dataToSend = data.replace(/\s/g, '');
             } else {
-                dataToSend = data + '\r\n'; // Agregar CR+LF para comandos ASCII
+                dataToSend = data + '\r\n';
             }
 
             const response = await fetch('/api/send', {
@@ -303,13 +349,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (!response.ok) throw new Error('Error al enviar datos');
 
-            // Limpiar el campo de entrada después de enviar
             sendData.value = '';
             
             // Agregar el mensaje enviado al área de visualización
             const messageElement = document.createElement('div');
             messageElement.className = 'text-blue-600 mb-1';
-            messageElement.textContent = `Enviado (${isHexMode ? 'HEX' : 'ASCII'}): ${data}`;
+            messageElement.textContent = `Enviado: ${data}`;
             receivedData.appendChild(messageElement);
             receivedData.scrollTop = receivedData.scrollHeight;
 
@@ -318,7 +363,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Función para enviar comandos
+    // Modificar la función sendCommand
     async function sendCommand(command) {
         if (!isConnected) {
             alert('Por favor conecte el puerto primero');
@@ -339,12 +384,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (!response.ok) throw new Error('Error al enviar comando');
 
-            // Agregar el mensaje enviado al área de visualización
-            const messageElement = document.createElement('div');
-            messageElement.className = 'text-purple-600 mb-1';
-            messageElement.textContent = `Comando enviado: ${command.description}`;
-            receivedData.appendChild(messageElement);
-            receivedData.scrollTop = receivedData.scrollHeight;
+            // Usar la nueva función appendMessage
+            appendMessage(`Comando enviado: ${command.description}`, 'text-purple-600');
 
         } catch (error) {
             alert('Error al enviar el comando');

@@ -258,6 +258,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // Función para validar si una cadena es hexadecimal válida
+    function isValidHex(str) {
+        return /^[0-9A-Fa-f]+$/.test(str.replace(/\s/g, ''));
+    }
+
     // Enviar datos
     async function sendDataToPort() {
         if (!isConnected) {
@@ -265,21 +270,34 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        const data = sendData.value;
+        const data = sendData.value.trim();
+        const isHexMode = document.querySelector('input[name="dataFormat"][value="hex"]').checked;
+
         if (!data) {
             alert('Por favor ingrese datos para enviar');
             return;
         }
 
         try {
+            let dataToSend;
+            if (isHexMode) {
+                if (!isValidHex(data)) {
+                    alert('Por favor ingrese datos hexadecimales válidos (0-9, A-F)');
+                    return;
+                }
+                dataToSend = data.replace(/\s/g, ''); // Remover espacios en blanco
+            } else {
+                dataToSend = data + '\r\n'; // Agregar CR+LF para comandos ASCII
+            }
+
             const response = await fetch('/api/send', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({ 
-                    data: data,
-                    isHex: false 
+                    data: dataToSend,
+                    isHex: isHexMode
                 })
             });
 
@@ -291,12 +309,11 @@ document.addEventListener('DOMContentLoaded', () => {
             // Agregar el mensaje enviado al área de visualización
             const messageElement = document.createElement('div');
             messageElement.className = 'text-blue-600 mb-1';
-            messageElement.textContent = `Enviado: ${data}`;
+            messageElement.textContent = `Enviado (${isHexMode ? 'HEX' : 'ASCII'}): ${data}`;
             receivedData.appendChild(messageElement);
             receivedData.scrollTop = receivedData.scrollHeight;
 
         } catch (error) {
-            console.error('Error al enviar datos:', error);
             alert('Error al enviar datos');
         }
     }
@@ -330,7 +347,6 @@ document.addEventListener('DOMContentLoaded', () => {
             receivedData.scrollTop = receivedData.scrollHeight;
 
         } catch (error) {
-            console.error('Error al enviar comando:', error);
             alert('Error al enviar el comando');
         }
     }

@@ -120,9 +120,36 @@
                 <!-- Envío de Tramas -->
                 <div class="mb-8">
                     <h3 class="text-xl font-semibold mb-4">Enviar Trama</h3>
-                    <div class="flex gap-4">
-                        <input type="text" id="sendData" class="flex-1 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" placeholder="Ingrese la trama a enviar...">
-                        <button id="sendBtn" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">Enviar</button>
+                    <div class="space-y-4">
+                        <!-- Selector de formato -->
+                        <div class="flex items-center space-x-6 bg-gray-50 p-3 rounded-lg">
+                            <label class="inline-flex items-center">
+                                <input type="radio" name="dataFormat" value="ascii" checked class="form-radio text-indigo-600">
+                                <span class="ml-2 font-medium">ASCII</span>
+                                <span class="ml-2 text-sm text-gray-500">(ejemplo: WHERE#)</span>
+                            </label>
+                            <label class="inline-flex items-center">
+                                <input type="radio" name="dataFormat" value="hex" class="form-radio text-indigo-600">
+                                <span class="ml-2 font-medium">Hexadecimal</span>
+                                <span class="ml-2 text-sm text-gray-500">(ejemplo: 7878...)</span>
+                            </label>
+                        </div>
+                        
+                        <!-- Campo de entrada y botón -->
+                        <div class="flex gap-4">
+                            <div class="flex-1">
+                                <input type="text" id="sendData" 
+                                    class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" 
+                                    placeholder="Ingrese el comando o trama hexadecimal...">
+                                <p class="text-xs text-gray-500 mt-1">
+                                    Nota: Los comandos ASCII se enviarán con CR+LF automáticamente. 
+                                    En modo HEX, puede incluir espacios entre bytes (serán removidos al enviar).
+                                </p>
+                            </div>
+                            <button id="sendBtn" class="bg-green-500 text-white px-6 py-2 rounded hover:bg-green-600 flex-shrink-0">
+                                Enviar
+                            </button>
+                        </div>
                     </div>
                 </div>
 

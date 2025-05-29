@@ -57,7 +57,7 @@ app.post('/api/connect', async (req, res) => {
         parser = serialConnection.pipe(new ReadlineParser({ delimiter: '\r\n' }));
 
         parser.on('data', (data) => {
-            console.log('Datos recibidos:', data);
+            // console.log('Datos recibidos:', data);
             // Emitir los datos a todos los clientes conectados
             io.emit('serialData', data);
         });
@@ -72,29 +72,58 @@ app.post('/api/connect', async (req, res) => {
 app.post('/api/send', (req, res) => {
     const { data, isHex } = req.body;
     
+    console.log('📦 Datos recibidos:', {
+        data,
+        isHex,
+        dataLength: data.length
+    });
+    
     if (!serialConnection) {
+        console.log('❌ Error: Puerto serial no conectado');
         return res.status(400).json({ error: 'Puerto serial no conectado' });
     }
 
     try {
         let dataToSend;
         if (isHex) {
-            // Convertir string hexadecimal a Buffer
-            dataToSend = Buffer.from(data.replace(/\s+/g, ''), 'hex');
+            console.log('🔄 Procesando datos HEX');
+            const cleanHex = data.replace(/\s+/g, '');
+            console.log('   - HEX limpio:', cleanHex);
+            dataToSend = Buffer.from(cleanHex, 'hex');
+            console.log('   - Buffer creado:', dataToSend);
         } else {
-            // Datos normales como string
+            console.log('🔄 Procesando datos ASCII');
             dataToSend = data;
+            console.log('   - Datos a enviar:', dataToSend);
+            // Mostrar bytes que se enviarán
+            const bytes = Buffer.from(dataToSend);
+            console.log('   - Bytes a enviar:', bytes);
         }
+
+        console.log('📤 Intentando escribir en el puerto:', {
+            dataType: typeof dataToSend,
+            length: dataToSend.length,
+            content: dataToSend
+        });
 
         serialConnection.write(dataToSend, (err) => {
             if (err) {
-                console.error('Error al escribir en el puerto:', err);
+                console.log('❌ Error al escribir en el puerto:', {
+                    name: err.name,
+                    message: err.message,
+                    stack: err.stack
+                });
                 return res.status(500).json({ error: err.message });
             }
+            console.log('✅ Datos enviados exitosamente');
             res.json({ message: 'Datos enviados exitosamente' });
         });
     } catch (error) {
-        console.error('Error al enviar datos:', error);
+        console.log('❌ Error en el procesamiento:', {
+            name: error.name,
+            message: error.message,
+            stack: error.stack
+        });
         res.status(500).json({ error: error.message });
     }
 });

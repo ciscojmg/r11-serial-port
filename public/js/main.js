@@ -45,14 +45,32 @@ document.addEventListener('DOMContentLoaded', () => {
             isHex: true
         },
         whereCommand: {
-            data: 'WHERE#\r\n',
+            data: 'WHERE#',
             description: 'Solicitud de localización (WHERE)',
             isHex: false
         },
         smsTestCommand: {
-            data: 'AT%TEST=SMS[][WHERE#]\r\n',
+            data: 'AT%TEST=SMS[][WHERE#]',
             description: 'Prueba de comando SMS para solicitud de ubicación',
             isHex: false
+        },
+        // Agregamos comandos básicos de prueba
+        basicCommands: {
+            statusCommand: {
+                data: 'STATUS#',
+                description: 'Solicitar estado del dispositivo',
+                isHex: false
+            },
+            versionCommand: {
+                data: 'VERSION#',
+                description: 'Solicitar versión del firmware',
+                isHex: false
+            },
+            paramCommand: {
+                data: 'PARAM#',
+                description: 'Solicitar parámetros actuales',
+                isHex: false
+            }
         }
     };
 
@@ -146,6 +164,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const currentScroll = receivedData.scrollTop + receivedData.clientHeight;
         const scrollDiff = Math.abs(currentScroll - lastScrollHeight);
         
+        // Si el usuario ha scrolleado hacia arriba (más de 30px de diferencia)
         if (scrollDiff > 30) {
             shouldAutoScroll = (currentScroll >= receivedData.scrollHeight - 50);
         }
@@ -173,6 +192,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // Event listener para el botón de limpieza
     clearBtn.addEventListener('click', () => {
         receivedData.innerHTML = '';
+        shouldAutoScroll = true;
+        lastScrollHeight = 0;
     });
 
     // Manejo de conexión Socket.IO
@@ -190,7 +211,11 @@ document.addEventListener('DOMContentLoaded', () => {
         messageElement.className = 'text-green-600 mb-1';
         messageElement.textContent = data;
         receivedData.appendChild(messageElement);
-        receivedData.scrollTop = receivedData.scrollHeight;
+        
+        // Solo hacer scroll si shouldAutoScroll es true
+        if (shouldAutoScroll) {
+            receivedData.scrollTop = receivedData.scrollHeight;
+        }
 
         // Procesar la trama para actualizar el dashboard
         processFrame(data);
@@ -333,7 +358,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 dataToSend = data.replace(/\s/g, '');
             } else {
-                dataToSend = data + '\r\n';
+                // Solo agregar # si es un comando (empieza con AT o es un comando conocido)
+                if (data.startsWith('AT') || 
+                    ['WHERE', 'STATUS', 'VERSION', 'PARAM'].some(cmd => data.startsWith(cmd))) {
+                    dataToSend = data.endsWith('#') ? data : data + '#';
+                } else {
+                    dataToSend = data;
+                }
+                // Agregar CR+LF para modo ASCII
+                dataToSend = dataToSend + '\r\n';
             }
 
             const response = await fetch('/api/send', {
@@ -354,9 +387,13 @@ document.addEventListener('DOMContentLoaded', () => {
             // Agregar el mensaje enviado al área de visualización
             const messageElement = document.createElement('div');
             messageElement.className = 'text-blue-600 mb-1';
-            messageElement.textContent = `Enviado: ${data}`;
+            messageElement.textContent = `Enviado: ${dataToSend.replace('\r\n', '')}`;
             receivedData.appendChild(messageElement);
-            receivedData.scrollTop = receivedData.scrollHeight;
+            
+            // Solo hacer scroll si shouldAutoScroll es true
+            if (shouldAutoScroll) {
+                receivedData.scrollTop = receivedData.scrollHeight;
+            }
 
         } catch (error) {
             alert('Error al enviar datos');
@@ -411,6 +448,46 @@ document.addEventListener('DOMContentLoaded', () => {
     sendSmsTestCmd.addEventListener('click', () => {
         sendCommand(predefinedCommands.smsTestCommand);
     });
+
+    // Agregar botones para comandos básicos
+    const commandsContainer = document.createElement('div');
+    commandsContainer.className = 'bg-gray-50 rounded-lg p-4 mb-4';
+    commandsContainer.innerHTML = `
+        <div class="flex justify-between items-start mb-2">
+            <div>
+                <h4 class="font-semibold">Comandos Básicos de Prueba</h4>
+                <p class="text-sm text-gray-600">Comandos simples para probar la comunicación</p>
+            </div>
+        </div>
+        <div class="space-x-2">
+            <button class="bg-indigo-500 text-white px-3 py-1 rounded hover:bg-indigo-600 text-sm" onclick="sendBasicCommand('STATUS#')">
+                STATUS
+            </button>
+            <button class="bg-indigo-500 text-white px-3 py-1 rounded hover:bg-indigo-600 text-sm" onclick="sendBasicCommand('VERSION#')">
+                VERSION
+            </button>
+            <button class="bg-indigo-500 text-white px-3 py-1 rounded hover:bg-indigo-600 text-sm" onclick="sendBasicCommand('PARAM#')">
+                PARAM
+            </button>
+        </div>
+    `;
+
+    // Insertar los botones después del último comando predefinido
+    const lastPredefinedCommand = document.querySelector('.bg-gray-50:last-of-type');
+    if (lastPredefinedCommand) {
+        lastPredefinedCommand.parentNode.insertBefore(commandsContainer, lastPredefinedCommand.nextSibling);
+    }
+
+    // Función para enviar comandos básicos
+    window.sendBasicCommand = function(command) {
+        if (!isConnected) {
+            alert('Por favor conecte el puerto primero');
+            return;
+        }
+
+        sendData.value = command;
+        sendDataToPort();
+    };
 
     // Cargar puertos al iniciar
     loadPorts();

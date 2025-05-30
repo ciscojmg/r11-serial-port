@@ -3,66 +3,99 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>R11 Serial Port Interface</title>
+    <title>Interfaz Serial R11</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛰️</text></svg>">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'sans': ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                },
+            },
+        }
+    </script>
     <script src="/socket.io/socket.io.js"></script>
 </head>
 <body class="bg-gray-100 min-h-screen p-8">
     <div class="max-w-7xl mx-auto">
-        <h1 class="text-3xl font-bold text-center mb-8">R11 Serial Port Interface</h1>
+        <h1 class="text-4xl font-bold text-center mb-8 text-gray-800 tracking-tight">Interfaz de Comunicación Serial R11</h1>
 
-        <!-- Panel de Control -->
-        <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
-            <h2 class="text-2xl font-semibold mb-6">Panel de Control</h2>
-            
-            <!-- Configuración del Puerto Serial -->
-            <div>
-                <h3 class="text-xl font-semibold mb-4">Configuración del Puerto</h3>
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Puerto</label>
-                        <select id="portSelect" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-                            <option value="">Seleccionar puerto...</option>
-                        </select>
+        <!-- Contenedor principal con dos columnas -->
+        <div class="grid grid-cols-2 gap-8 mb-8">
+            <!-- Panel de Control (50%) -->
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <!-- Configuración del Puerto Serial -->
+                <div>
+                    <h3 class="text-xl font-semibold mb-4">Configuración del Puerto</h3>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Puerto</label>
+                            <select id="portSelect" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                <option value="">Seleccionar puerto...</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Baudios</label>
+                            <select id="baudRate" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                <option value="9600">9600</option>
+                                <option value="19200">19200</option>
+                                <option value="38400">38400</option>
+                                <option value="57600">57600</option>
+                                <option value="115200">115200</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Bits de Datos</label>
+                            <select id="dataBits" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                <option value="8">8</option>
+                                <option value="7">7</option>
+                                <option value="6">6</option>
+                                <option value="5">5</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Bits de Parada</label>
+                            <select id="stopBits" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                <option value="1">1</option>
+                                <option value="2">2</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Paridad</label>
+                            <select id="parity" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                <option value="none">Ninguna</option>
+                                <option value="even">Par</option>
+                                <option value="odd">Impar</option>
+                            </select>
+                        </div>
+                        <div class="flex items-end">
+                            <button id="connectBtn" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Conectar</button>
+                        </div>
                     </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Baudios</label>
-                        <select id="baudRate" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-                            <option value="9600">9600</option>
-                            <option value="19200">19200</option>
-                            <option value="38400">38400</option>
-                            <option value="57600">57600</option>
-                            <option value="115200">115200</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Bits de Datos</label>
-                        <select id="dataBits" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-                            <option value="8">8</option>
-                            <option value="7">7</option>
-                            <option value="6">6</option>
-                            <option value="5">5</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Bits de Parada</label>
-                        <select id="stopBits" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-                            <option value="1">1</option>
-                            <option value="2">2</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Paridad</label>
-                        <select id="parity" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-                            <option value="none">Ninguna</option>
-                            <option value="even">Par</option>
-                            <option value="odd">Impar</option>
-                        </select>
-                    </div>
-                    <div class="flex items-end">
-                        <button id="connectBtn" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Conectar</button>
-                    </div>
+                </div>
+            </div>
+
+            <!-- Imagen del dispositivo (50%) -->
+            <div class="bg-white rounded-lg shadow-lg p-6 h-[300px] relative">
+                <!-- Botón del Manual -->
+                <div class="absolute top-4 right-4">
+                    <a href="https://drive.google.com/file/d/1Y4YLIhsCiJ65RbjVxZDO-VdUn1fkZXvl/view?usp=sharing" 
+                       target="_blank" 
+                       class="inline-flex items-center p-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg shadow transition-colors duration-200">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                        </svg>
+                    </a>
+                </div>
+                <!-- Contenedor de la imagen -->
+                <div class="h-[calc(300px-3rem)] flex items-center justify-center">
+                    <img src="/images/device.png" alt="R11 Device" class="max-h-full w-auto object-contain">
                 </div>
             </div>
         </div>

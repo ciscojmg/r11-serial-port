@@ -380,12 +380,56 @@ document.addEventListener('DOMContentLoaded', () => {
     const previewSequence = document.getElementById('previewSequence');
     const previewChecksum = document.getElementById('previewChecksum');
 
+    // Función para actualizar la vista previa de la trama
+    function updateFramePreview() {
+        const command = customCommand.value.trim();
+        const sequence = sequenceNumber.value.trim() || '0001';  // Cambiado a 0001 como valor inicial
+
+        // Convertir comando a hex
+        const commandHex = textToHex(command);
+        
+        // Calcular longitudes según el manual
+        // Instruction length = Server flag (4 bytes) + Command content length (N)
+        const instructionLength = 4 + (commandHex.length / 2);
+        
+        // Packet length = protocol (1) + instruction length (1) + server flag (4) + command content (N) + serial number (2) + error check (2)
+        const packetLength = 1 + 1 + 4 + (commandHex.length / 2) + 2 + 2;
+
+        // Actualizar vista previa principal
+        previewLength.textContent = packetLength.toString(16).padStart(2, '0').toUpperCase();
+        previewContentLength.textContent = instructionLength.toString(16).padStart(2, '0').toUpperCase();
+        previewCommand.textContent = commandHex;
+        previewSequence.textContent = sequence;
+
+        // Actualizar detalles en la tabla
+        document.getElementById('previewLengthDetail').textContent = packetLength.toString(16).padStart(2, '0').toUpperCase();
+        document.getElementById('previewContentLengthDetail').textContent = instructionLength.toString(16).padStart(2, '0').toUpperCase();
+        document.getElementById('previewCommandDetail').textContent = commandHex;
+        document.getElementById('previewSequenceDetail').textContent = sequence;
+
+        // Calcular CRC-ITU (desde packet length hasta information serial number)
+        const dataForCrc = 
+            packetLength.toString(16).padStart(2, '0') +
+            '80' +
+            instructionLength.toString(16).padStart(2, '0') +
+            '00000000' +
+            commandHex +
+            sequence;
+        
+        const crc = calculateCRC16(dataForCrc);
+        const checksumHex = crc.toString(16).padStart(4, '0').toUpperCase();
+        
+        // Actualizar checksum en ambos lugares
+        previewChecksum.textContent = checksumHex;
+        document.getElementById('previewChecksumDetail').textContent = checksumHex;
+    }
+
     // Función para convertir texto a hexadecimal
     function textToHex(text) {
         return Array.from(text).map(char => char.charCodeAt(0).toString(16).padStart(2, '0')).join('').toUpperCase();
     }
 
-    // Función para calcular CRC-16
+    // Función para calcular CRC-16 (CRC-ITU)
     function calculateCRC16(data) {
         let crc = 0xFFFF;
         for (let i = 0; i < data.length; i += 2) {
@@ -399,47 +443,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
         return crc;
-    }
-
-    // Función para actualizar la vista previa de la trama
-    function updateFramePreview() {
-        const command = customCommand.value.trim();
-        const sequence = sequenceNumber.value.trim() || '9999';
-
-        // Convertir comando a hex
-        const commandHex = textToHex(command);
-        
-        // Calcular longitudes
-        const contentLength = (commandHex.length / 2) + 6; // comando + 4 bytes en cero + 2 bytes secuencia
-        const packetLength = contentLength + 6; // contenido + protocolo + longitud contenido + checksum
-
-        // Actualizar vista previa principal
-        previewLength.textContent = packetLength.toString(16).padStart(2, '0').toUpperCase();
-        previewContentLength.textContent = contentLength.toString(16).padStart(2, '0').toUpperCase();
-        previewCommand.textContent = commandHex;
-        previewSequence.textContent = sequence;
-
-        // Actualizar detalles en la tabla
-        document.getElementById('previewLengthDetail').textContent = packetLength.toString(16).padStart(2, '0').toUpperCase();
-        document.getElementById('previewContentLengthDetail').textContent = contentLength.toString(16).padStart(2, '0').toUpperCase();
-        document.getElementById('previewCommandDetail').textContent = commandHex;
-        document.getElementById('previewSequenceDetail').textContent = sequence;
-
-        // Calcular y actualizar checksum
-        const dataForCrc = 
-            packetLength.toString(16).padStart(2, '0') +
-            '80' +
-            contentLength.toString(16).padStart(2, '0') +
-            '00000000' +
-            commandHex +
-            sequence;
-        
-        const crc = calculateCRC16(dataForCrc);
-        const checksumHex = crc.toString(16).padStart(4, '0').toUpperCase();
-        
-        // Actualizar checksum en ambos lugares
-        previewChecksum.textContent = checksumHex;
-        document.getElementById('previewChecksumDetail').textContent = checksumHex;
     }
 
     // Función para generar y enviar la trama completa

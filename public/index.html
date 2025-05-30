@@ -113,57 +113,57 @@
                                         </thead>
                                         <tbody class="bg-white divide-y divide-gray-200 text-sm">
                                             <tr>
-                                                <td class="px-4 py-2 text-blue-600 font-mono">Start</td>
+                                                <td class="px-4 py-2 text-blue-600 font-mono">Start bit</td>
                                                 <td class="px-4 py-2 font-mono">7878</td>
-                                                <td class="px-4 py-2">Inicio de trama</td>
+                                                <td class="px-4 py-2">Valor fijo, unificado a hexadecimal 0x78 0x78</td>
                                                 <td class="px-4 py-2">2 bytes</td>
                                             </tr>
                                             <tr>
-                                                <td class="px-4 py-2 text-red-600 font-mono">Length</td>
+                                                <td class="px-4 py-2 text-red-600 font-mono">Packet length</td>
                                                 <td class="px-4 py-2 font-mono"><span id="previewLengthDetail">11</span></td>
-                                                <td class="px-4 py-2">Longitud total del paquete</td>
+                                                <td class="px-4 py-2">Longitud = protocolo + contenido + número de secuencia + verificación (5+N)</td>
                                                 <td class="px-4 py-2">1 byte</td>
                                             </tr>
                                             <tr>
-                                                <td class="px-4 py-2 text-green-600 font-mono">Protocol</td>
+                                                <td class="px-4 py-2 text-green-600 font-mono">Agreement number</td>
                                                 <td class="px-4 py-2 font-mono">80</td>
-                                                <td class="px-4 py-2">Protocolo de comando</td>
+                                                <td class="px-4 py-2">Valor fijo: 0x80 para comandos del servidor</td>
                                                 <td class="px-4 py-2">1 byte</td>
                                             </tr>
                                             <tr>
-                                                <td class="px-4 py-2 text-purple-600 font-mono">Content Length</td>
+                                                <td class="px-4 py-2 text-purple-600 font-mono">Instruction length</td>
                                                 <td class="px-4 py-2 font-mono"><span id="previewContentLengthDetail">0B</span></td>
-                                                <td class="px-4 py-2">Longitud del contenido</td>
+                                                <td class="px-4 py-2">Longitud = Server flag + Command content length</td>
                                                 <td class="px-4 py-2">1 byte</td>
                                             </tr>
                                             <tr>
-                                                <td class="px-4 py-2 text-gray-600 font-mono">Server Flag</td>
+                                                <td class="px-4 py-2 text-gray-600 font-mono">Server flag</td>
                                                 <td class="px-4 py-2 font-mono">00000000</td>
-                                                <td class="px-4 py-2">Bandera del servidor</td>
+                                                <td class="px-4 py-2">Identificación del servidor, se devuelve en la respuesta</td>
                                                 <td class="px-4 py-2">4 bytes</td>
                                             </tr>
                                             <tr>
-                                                <td class="px-4 py-2 text-orange-600 font-mono">Command</td>
+                                                <td class="px-4 py-2 text-orange-600 font-mono">Command content</td>
                                                 <td class="px-4 py-2 font-mono"><span id="previewCommandDetail">53544154555323</span></td>
-                                                <td class="px-4 py-2">Comando en ASCII (HEX)</td>
-                                                <td class="px-4 py-2">Variable</td>
+                                                <td class="px-4 py-2">Comando ASCII compatible con comandos SMS</td>
+                                                <td class="px-4 py-2">N bytes</td>
                                             </tr>
                                             <tr>
-                                                <td class="px-4 py-2 text-indigo-600 font-mono">Sequence</td>
+                                                <td class="px-4 py-2 text-indigo-600 font-mono">Information serial number</td>
                                                 <td class="px-4 py-2 font-mono"><span id="previewSequenceDetail">9999</span></td>
-                                                <td class="px-4 py-2">Número de secuencia</td>
+                                                <td class="px-4 py-2">Número de secuencia del mensaje</td>
                                                 <td class="px-4 py-2">2 bytes</td>
                                             </tr>
                                             <tr>
-                                                <td class="px-4 py-2 text-red-600 font-mono">CRC-16</td>
+                                                <td class="px-4 py-2 text-red-600 font-mono">Error checking</td>
                                                 <td class="px-4 py-2 font-mono"><span id="previewChecksumDetail">ABCD</span></td>
-                                                <td class="px-4 py-2">Checksum de verificación</td>
+                                                <td class="px-4 py-2">CRC-ITU desde "packet length" hasta "information serial number"</td>
                                                 <td class="px-4 py-2">2 bytes</td>
                                             </tr>
                                             <tr>
-                                                <td class="px-4 py-2 text-blue-600 font-mono">End</td>
+                                                <td class="px-4 py-2 text-blue-600 font-mono">Stop bit</td>
                                                 <td class="px-4 py-2 font-mono">0D0A</td>
-                                                <td class="px-4 py-2">Fin de trama (CR+LF)</td>
+                                                <td class="px-4 py-2">Valor fijo: 0x0D 0x0A</td>
                                                 <td class="px-4 py-2">2 bytes</td>
                                             </tr>
                                         </tbody>

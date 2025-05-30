@@ -72,9 +72,9 @@
             <!-- Grid de dos columnas -->
             <div class="grid grid-cols-2 gap-8">
                 <!-- Columna izquierda (50%) -->
-                <div class="space-y-8">
+                <div class="h-[1200px] overflow-y-auto bg-white rounded-lg shadow-lg p-6">
                     <!-- Generador de Tramas -->
-                    <div class="bg-white rounded-lg shadow-lg p-6">
+                    <div class="mb-8">
                         <h3 class="text-xl font-semibold mb-4">Generador de Tramas</h3>
                         <div class="space-y-4">
                             <div>
@@ -188,7 +188,7 @@
                     </div>
 
                     <!-- Envío de Tramas -->
-                    <div class="bg-white rounded-lg shadow-lg p-6">
+                    <div>
                         <h3 class="text-xl font-semibold mb-4">Enviar Trama</h3>
                         <div class="space-y-4">
                             <!-- Selector de formato -->
@@ -225,18 +225,15 @@
                 </div>
 
                 <!-- Columna derecha (50%) -->
-                <div class="h-full">
-                    <!-- Tramas Recibidas -->
-                    <div class="bg-white rounded-lg shadow-lg p-6 h-full">
-                        <div class="flex justify-between items-center mb-4">
-                            <h3 class="text-xl font-semibold">Tramas Recibidas</h3>
-                            <button id="clearBtn" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 text-sm">
-                                Limpiar
-                            </button>
-                        </div>
-                        <div id="receivedData" class="h-[calc(100%-4rem)] overflow-y-auto p-4 bg-gray-50 rounded-md border border-gray-300 font-mono text-sm">
-                            <!-- Aquí se mostrarán las tramas recibidas -->
-                        </div>
+                <div class="h-[1200px] bg-white rounded-lg shadow-lg p-6 flex flex-col">
+                    <div class="flex justify-between items-center mb-4 flex-shrink-0">
+                        <h3 class="text-xl font-semibold">Tramas Recibidas</h3>
+                        <button id="clearBtn" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 text-sm">
+                            Limpiar
+                        </button>
+                    </div>
+                    <div id="receivedData" class="flex-1 overflow-y-auto p-4 bg-gray-50 rounded-md border border-gray-300 font-mono text-sm">
+                        <!-- Aquí se mostrarán las tramas recibidas -->
                     </div>
                 </div>
             </div>

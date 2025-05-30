@@ -37,43 +37,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // Inicializar Socket.IO
     const socket = io();
 
-    // Definición de comandos predefinidos
-    const predefinedCommands = {
-        locationCommand: {
-            hex: '78780D8000014C4A44570001620C0D0A',
-            description: 'Solicitud de localización inmediata (LJDW)',
-            isHex: true
-        },
-        whereCommand: {
-            data: 'WHERE#',
-            description: 'Solicitud de localización (WHERE)',
-            isHex: false
-        },
-        smsTestCommand: {
-            data: 'AT%TEST=SMS[][WHERE#]',
-            description: 'Prueba de comando SMS para solicitud de ubicación',
-            isHex: false
-        },
-        // Agregamos comandos básicos de prueba
-        basicCommands: {
-            statusCommand: {
-                data: 'STATUS#',
-                description: 'Solicitar estado del dispositivo',
-                isHex: false
-            },
-            versionCommand: {
-                data: 'VERSION#',
-                description: 'Solicitar versión del firmware',
-                isHex: false
-            },
-            paramCommand: {
-                data: 'PARAM#',
-                description: 'Solicitar parámetros actuales',
-                isHex: false
-            }
-        }
-    };
-
     // Función para procesar las tramas recibidas
     function processFrame(data) {
         const line = data.trim();
@@ -400,94 +363,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Modificar la función sendCommand
-    async function sendCommand(command) {
-        if (!isConnected) {
-            alert('Por favor conecte el puerto primero');
-            return;
-        }
-
-        try {
-            const response = await fetch('/api/send', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ 
-                    data: command.isHex ? command.hex : command.data,
-                    isHex: command.isHex
-                })
-            });
-
-            if (!response.ok) throw new Error('Error al enviar comando');
-
-            // Usar la nueva función appendMessage
-            appendMessage(`Comando enviado: ${command.description}`, 'text-purple-600');
-
-        } catch (error) {
-            alert('Error al enviar el comando');
-        }
-    }
-
     // Event Listeners
     connectBtn.addEventListener('click', toggleConnection);
     sendBtn.addEventListener('click', sendDataToPort);
     sendData.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') sendDataToPort();
     });
-
-    // Event listeners para los comandos predefinidos
-    sendLocationCmd.addEventListener('click', () => {
-        sendCommand(predefinedCommands.locationCommand);
-    });
-
-    sendWhereCmd.addEventListener('click', () => {
-        sendCommand(predefinedCommands.whereCommand);
-    });
-
-    sendSmsTestCmd.addEventListener('click', () => {
-        sendCommand(predefinedCommands.smsTestCommand);
-    });
-
-    // Agregar botones para comandos básicos
-    const commandsContainer = document.createElement('div');
-    commandsContainer.className = 'bg-gray-50 rounded-lg p-4 mb-4';
-    commandsContainer.innerHTML = `
-        <div class="flex justify-between items-start mb-2">
-            <div>
-                <h4 class="font-semibold">Comandos Básicos de Prueba</h4>
-                <p class="text-sm text-gray-600">Comandos simples para probar la comunicación</p>
-            </div>
-        </div>
-        <div class="space-x-2">
-            <button class="bg-indigo-500 text-white px-3 py-1 rounded hover:bg-indigo-600 text-sm" onclick="sendBasicCommand('STATUS#')">
-                STATUS
-            </button>
-            <button class="bg-indigo-500 text-white px-3 py-1 rounded hover:bg-indigo-600 text-sm" onclick="sendBasicCommand('VERSION#')">
-                VERSION
-            </button>
-            <button class="bg-indigo-500 text-white px-3 py-1 rounded hover:bg-indigo-600 text-sm" onclick="sendBasicCommand('PARAM#')">
-                PARAM
-            </button>
-        </div>
-    `;
-
-    // Insertar los botones después del último comando predefinido
-    const lastPredefinedCommand = document.querySelector('.bg-gray-50:last-of-type');
-    if (lastPredefinedCommand) {
-        lastPredefinedCommand.parentNode.insertBefore(commandsContainer, lastPredefinedCommand.nextSibling);
-    }
-
-    // Función para enviar comandos básicos
-    window.sendBasicCommand = function(command) {
-        if (!isConnected) {
-            alert('Por favor conecte el puerto primero');
-            return;
-        }
-
-        sendData.value = command;
-        sendDataToPort();
-    };
 
     // Elementos del generador de tramas
     const customCommand = document.getElementById('customCommand');
@@ -532,11 +413,17 @@ document.addEventListener('DOMContentLoaded', () => {
         const contentLength = (commandHex.length / 2) + 6; // comando + 4 bytes en cero + 2 bytes secuencia
         const packetLength = contentLength + 6; // contenido + protocolo + longitud contenido + checksum
 
-        // Actualizar vista previa
+        // Actualizar vista previa principal
         previewLength.textContent = packetLength.toString(16).padStart(2, '0').toUpperCase();
         previewContentLength.textContent = contentLength.toString(16).padStart(2, '0').toUpperCase();
         previewCommand.textContent = commandHex;
         previewSequence.textContent = sequence;
+
+        // Actualizar detalles en la tabla
+        document.getElementById('previewLengthDetail').textContent = packetLength.toString(16).padStart(2, '0').toUpperCase();
+        document.getElementById('previewContentLengthDetail').textContent = contentLength.toString(16).padStart(2, '0').toUpperCase();
+        document.getElementById('previewCommandDetail').textContent = commandHex;
+        document.getElementById('previewSequenceDetail').textContent = sequence;
 
         // Calcular y actualizar checksum
         const dataForCrc = 
@@ -548,7 +435,11 @@ document.addEventListener('DOMContentLoaded', () => {
             sequence;
         
         const crc = calculateCRC16(dataForCrc);
-        previewChecksum.textContent = crc.toString(16).padStart(4, '0').toUpperCase();
+        const checksumHex = crc.toString(16).padStart(4, '0').toUpperCase();
+        
+        // Actualizar checksum en ambos lugares
+        previewChecksum.textContent = checksumHex;
+        document.getElementById('previewChecksumDetail').textContent = checksumHex;
     }
 
     // Función para generar y enviar la trama completa

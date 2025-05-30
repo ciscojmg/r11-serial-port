@@ -67,57 +67,6 @@
                     </div>
                 </div>
 
-                <!-- Comandos Predefinidos -->
-                <div class="mb-8">
-                    <h3 class="text-xl font-semibold mb-4">Comandos Predefinidos</h3>
-                    <div class="grid grid-cols-1 gap-4">
-                        <div class="bg-gray-50 rounded-lg p-4">
-                            <div class="flex justify-between items-start mb-2">
-                                <div>
-                                    <h4 class="font-semibold">Localización Inmediata (LJDW)</h4>
-                                    <p class="text-sm text-gray-600">Solicita la posición GPS actual del dispositivo (Protocolo binario)</p>
-                                </div>
-                                <button id="sendLocationCmd" class="bg-indigo-500 text-white px-4 py-2 rounded hover:bg-indigo-600">
-                                    Enviar
-                                </button>
-                            </div>
-                            <div class="font-mono text-sm bg-gray-100 p-2 rounded">
-                                78 78 0D 80 00 01 4C 4A 44 57 00 01 62 0C 0D 0A
-                            </div>
-                        </div>
-
-                        <div class="bg-gray-50 rounded-lg p-4">
-                            <div class="flex justify-between items-start mb-2">
-                                <div>
-                                    <h4 class="font-semibold">Localización WHERE</h4>
-                                    <p class="text-sm text-gray-600">Solicita la posición GPS actual del dispositivo (Comando ASCII)</p>
-                                </div>
-                                <button id="sendWhereCmd" class="bg-indigo-500 text-white px-4 py-2 rounded hover:bg-indigo-600">
-                                    Enviar
-                                </button>
-                            </div>
-                            <div class="font-mono text-sm bg-gray-100 p-2 rounded">
-                                WHERE#
-                            </div>
-                        </div>
-
-                        <div class="bg-gray-50 rounded-lg p-4">
-                            <div class="flex justify-between items-start mb-2">
-                                <div>
-                                    <h4 class="font-semibold">Test SMS WHERE</h4>
-                                    <p class="text-sm text-gray-600">Prueba de comando SMS para solicitud de ubicación</p>
-                                </div>
-                                <button id="sendSmsTestCmd" class="bg-indigo-500 text-white px-4 py-2 rounded hover:bg-indigo-600">
-                                    Enviar
-                                </button>
-                            </div>
-                            <div class="font-mono text-sm bg-gray-100 p-2 rounded">
-                                AT%TEST=SMS[][WHERE#]
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
                 <!-- Generador de Tramas Personalizadas -->
                 <div class="mb-8">
                     <h3 class="text-xl font-semibold mb-4">Generador de Tramas</h3>
@@ -139,7 +88,7 @@
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Vista Previa de la Trama</label>
-                                <div class="font-mono text-sm bg-gray-100 p-2 rounded break-all">
+                                <div class="font-mono text-sm bg-gray-100 p-2 rounded break-all mb-4">
                                     <span class="text-blue-600">7878</span>
                                     <span id="previewLength" class="text-red-600">11</span>
                                     <span class="text-green-600">80</span>
@@ -149,6 +98,76 @@
                                     <span id="previewSequence" class="text-indigo-600">9999</span>
                                     <span id="previewChecksum" class="text-red-600">ABCD</span>
                                     <span class="text-blue-600">0D0A</span>
+                                </div>
+                                
+                                <!-- Tabla explicativa de la trama -->
+                                <div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                                    <table class="min-w-full divide-y divide-gray-200">
+                                        <thead class="bg-gray-50">
+                                            <tr>
+                                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Campo</th>
+                                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Valor</th>
+                                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Descripción</th>
+                                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Longitud</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="bg-white divide-y divide-gray-200 text-sm">
+                                            <tr>
+                                                <td class="px-4 py-2 text-blue-600 font-mono">Start</td>
+                                                <td class="px-4 py-2 font-mono">7878</td>
+                                                <td class="px-4 py-2">Inicio de trama</td>
+                                                <td class="px-4 py-2">2 bytes</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="px-4 py-2 text-red-600 font-mono">Length</td>
+                                                <td class="px-4 py-2 font-mono"><span id="previewLengthDetail">11</span></td>
+                                                <td class="px-4 py-2">Longitud total del paquete</td>
+                                                <td class="px-4 py-2">1 byte</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="px-4 py-2 text-green-600 font-mono">Protocol</td>
+                                                <td class="px-4 py-2 font-mono">80</td>
+                                                <td class="px-4 py-2">Protocolo de comando</td>
+                                                <td class="px-4 py-2">1 byte</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="px-4 py-2 text-purple-600 font-mono">Content Length</td>
+                                                <td class="px-4 py-2 font-mono"><span id="previewContentLengthDetail">0B</span></td>
+                                                <td class="px-4 py-2">Longitud del contenido</td>
+                                                <td class="px-4 py-2">1 byte</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="px-4 py-2 text-gray-600 font-mono">Server Flag</td>
+                                                <td class="px-4 py-2 font-mono">00000000</td>
+                                                <td class="px-4 py-2">Bandera del servidor</td>
+                                                <td class="px-4 py-2">4 bytes</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="px-4 py-2 text-orange-600 font-mono">Command</td>
+                                                <td class="px-4 py-2 font-mono"><span id="previewCommandDetail">53544154555323</span></td>
+                                                <td class="px-4 py-2">Comando en ASCII (HEX)</td>
+                                                <td class="px-4 py-2">Variable</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="px-4 py-2 text-indigo-600 font-mono">Sequence</td>
+                                                <td class="px-4 py-2 font-mono"><span id="previewSequenceDetail">9999</span></td>
+                                                <td class="px-4 py-2">Número de secuencia</td>
+                                                <td class="px-4 py-2">2 bytes</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="px-4 py-2 text-red-600 font-mono">CRC-16</td>
+                                                <td class="px-4 py-2 font-mono"><span id="previewChecksumDetail">ABCD</span></td>
+                                                <td class="px-4 py-2">Checksum de verificación</td>
+                                                <td class="px-4 py-2">2 bytes</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="px-4 py-2 text-blue-600 font-mono">End</td>
+                                                <td class="px-4 py-2 font-mono">0D0A</td>
+                                                <td class="px-4 py-2">Fin de trama (CR+LF)</td>
+                                                <td class="px-4 py-2">2 bytes</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
                                 </div>
                             </div>
                             <div class="flex justify-between items-center">

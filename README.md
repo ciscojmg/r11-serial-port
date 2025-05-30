@@ -42,12 +42,7 @@ cd r11-serial-port
 npm install
 ```
 
-3. **Configurar el entorno**
-```bash
-cp .env.example .env
-```
-
-4. **Iniciar el servidor**
+3. **Iniciar el servidor**
 ```bash
 npm start
 ```

@@ -489,6 +489,124 @@ document.addEventListener('DOMContentLoaded', () => {
         sendDataToPort();
     };
 
+    // Elementos del generador de tramas
+    const customCommand = document.getElementById('customCommand');
+    const sequenceNumber = document.getElementById('sequenceNumber');
+    const generateFrameBtn = document.getElementById('generateFrameBtn');
+    const previewLength = document.getElementById('previewLength');
+    const previewContentLength = document.getElementById('previewContentLength');
+    const previewCommand = document.getElementById('previewCommand');
+    const previewSequence = document.getElementById('previewSequence');
+    const previewChecksum = document.getElementById('previewChecksum');
+
+    // Función para convertir texto a hexadecimal
+    function textToHex(text) {
+        return Array.from(text).map(char => char.charCodeAt(0).toString(16).padStart(2, '0')).join('').toUpperCase();
+    }
+
+    // Función para calcular CRC-16
+    function calculateCRC16(data) {
+        let crc = 0xFFFF;
+        for (let i = 0; i < data.length; i += 2) {
+            crc ^= parseInt(data.substr(i, 2), 16);
+            for (let j = 0; j < 8; j++) {
+                if (crc & 0x0001) {
+                    crc = (crc >> 1) ^ 0x8408;
+                } else {
+                    crc >>= 1;
+                }
+            }
+        }
+        return crc;
+    }
+
+    // Función para actualizar la vista previa de la trama
+    function updateFramePreview() {
+        const command = customCommand.value.trim();
+        const sequence = sequenceNumber.value.trim() || '9999';
+
+        // Convertir comando a hex
+        const commandHex = textToHex(command);
+        
+        // Calcular longitudes
+        const contentLength = (commandHex.length / 2) + 6; // comando + 4 bytes en cero + 2 bytes secuencia
+        const packetLength = contentLength + 6; // contenido + protocolo + longitud contenido + checksum
+
+        // Actualizar vista previa
+        previewLength.textContent = packetLength.toString(16).padStart(2, '0').toUpperCase();
+        previewContentLength.textContent = contentLength.toString(16).padStart(2, '0').toUpperCase();
+        previewCommand.textContent = commandHex;
+        previewSequence.textContent = sequence;
+
+        // Calcular y actualizar checksum
+        const dataForCrc = 
+            packetLength.toString(16).padStart(2, '0') +
+            '80' +
+            contentLength.toString(16).padStart(2, '0') +
+            '00000000' +
+            commandHex +
+            sequence;
+        
+        const crc = calculateCRC16(dataForCrc);
+        previewChecksum.textContent = crc.toString(16).padStart(4, '0').toUpperCase();
+    }
+
+    // Función para generar y enviar la trama completa
+    function generateAndSendFrame() {
+        if (!isConnected) {
+            alert('Por favor conecte el puerto primero');
+            return;
+        }
+
+        const command = customCommand.value.trim();
+        if (!command) {
+            alert('Por favor ingrese un comando');
+            return;
+        }
+
+        const sequence = sequenceNumber.value.trim() || '9999';
+        const commandHex = textToHex(command);
+        
+        // Calcular longitudes
+        const contentLength = (commandHex.length / 2) + 6;
+        const packetLength = contentLength + 6;
+
+        // Construir la trama
+        const dataForCrc = 
+            packetLength.toString(16).padStart(2, '0') +
+            '80' +
+            contentLength.toString(16).padStart(2, '0') +
+            '00000000' +
+            commandHex +
+            sequence;
+        
+        const crc = calculateCRC16(dataForCrc);
+        
+        // Trama completa
+        const frame = 
+            '7878' +
+            dataForCrc +
+            crc.toString(16).padStart(4, '0') +
+            '0D0A';
+
+        // Enviar la trama
+        sendData.value = frame;
+        document.querySelector('input[name="dataFormat"][value="hex"]').checked = true;
+        sendDataToPort();
+    }
+
+    // Event listeners para el generador de tramas
+    customCommand.addEventListener('input', updateFramePreview);
+    sequenceNumber.addEventListener('input', event => {
+        // Validar entrada hexadecimal y longitud
+        event.target.value = event.target.value.replace(/[^0-9A-Fa-f]/g, '').substr(0, 4).toUpperCase();
+        updateFramePreview();
+    });
+    generateFrameBtn.addEventListener('click', generateAndSendFrame);
+
+    // Actualizar vista previa inicial
+    updateFramePreview();
+
     // Cargar puertos al iniciar
     loadPorts();
 }); 

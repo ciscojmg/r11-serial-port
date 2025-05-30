@@ -458,35 +458,54 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        const sequence = sequenceNumber.value.trim() || '9999';
+        const sequence = sequenceNumber.value.trim() || '0001';
         const commandHex = textToHex(command);
         
-        // Calcular longitudes
-        const contentLength = (commandHex.length / 2) + 6;
-        const packetLength = contentLength + 6;
+        // Calcular longitudes según el manual
+        // Instruction length = Server flag (4 bytes) + Command content length (N)
+        const instructionLength = 4 + (commandHex.length / 2);
+        
+        // Packet length = protocol (1) + instruction length (1) + server flag (4) + command content (N) + serial number (2) + error check (2)
+        const packetLength = 1 + 1 + 4 + (commandHex.length / 2) + 2 + 2;
 
         // Construir la trama
         const dataForCrc = 
-            packetLength.toString(16).padStart(2, '0') +
+            packetLength.toString(16).padStart(2, '0').toUpperCase() +
             '80' +
-            contentLength.toString(16).padStart(2, '0') +
+            instructionLength.toString(16).padStart(2, '0').toUpperCase() +
             '00000000' +
             commandHex +
             sequence;
         
         const crc = calculateCRC16(dataForCrc);
+        const checksumHex = crc.toString(16).padStart(4, '0').toUpperCase();
         
         // Trama completa
         const frame = 
             '7878' +
             dataForCrc +
-            crc.toString(16).padStart(4, '0') +
+            checksumHex +
             '0D0A';
 
         // Enviar la trama
-        sendData.value = frame;
-        document.querySelector('input[name="dataFormat"][value="hex"]').checked = true;
-        sendDataToPort();
+        fetch('/api/send', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ 
+                data: frame,
+                isHex: true
+            })
+        })
+        .then(response => {
+            if (!response.ok) throw new Error('Error al enviar la trama');
+            appendMessage(`Trama enviada: ${frame}`, 'text-blue-600');
+        })
+        .catch(error => {
+            alert('Error al enviar la trama');
+            console.error('Error:', error);
+        });
     }
 
     // Event listeners para el generador de tramas

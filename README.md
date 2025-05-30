@@ -2,7 +2,7 @@
 
 Una interfaz web moderna y potente para la comunicación serial con dispositivos R11, diseñada para facilitar la configuración, monitoreo y control del dispositivo a través de una interfaz intuitiva.
 
-![Vista Principal de la Interfaz](/docs/images/main-interface.png)
+![Vista Principal de la Interfaz](https://github.com/ciscojmg/r11-serial-port/blob/main/docs/main-interface.png)
 
 ## ✨ Características
 
@@ -33,7 +33,7 @@ Una interfaz web moderna y potente para la comunicación serial con dispositivos
 
 1. **Clonar el repositorio**
 ```bash
-git clone https://github.com/tuusuario/r11-serial-port.git
+git clone https://github.com/ciscojmg/r11-serial-port.git
 cd r11-serial-port
 ```
 
@@ -57,20 +57,20 @@ La aplicación estará disponible en `http://localhost:3000`
 ## 📸 Guía de Uso
 
 ### Configuración Inicial
-![Configuración del Puerto](/docs/images/port-config.png)
+![Configuración del Puerto](https://github.com/ciscojmg/r11-serial-port/blob/main/docs/port-config.png)
 1. Selecciona el puerto COM correspondiente a tu dispositivo
 2. Configura los parámetros de comunicación (por defecto: 9600 baudios, 8N1)
 3. Haz clic en "Conectar"
 
 ### Envío de Comandos
-![Generador de Tramas](/docs/images/frame-generator.png)
+![Generador de Tramas](https://github.com/ciscojmg/r11-serial-port/blob/main/docs/frame-generator.png)
 1. Utiliza el generador de tramas para crear comandos
 2. Ingresa el comando ASCII y el número de secuencia
 3. La trama se generará automáticamente con el formato correcto
 4. Haz clic en "Generar y Enviar"
 
 ### Monitoreo
-![Panel de Estado](/docs/images/status-panel.png)
+![Panel de Estado](https://github.com/ciscojmg/r11-serial-port/blob/main/docs/status-panel.png)
 - Visualiza el estado del dispositivo en tiempo real
 - Monitorea las tramas recibidas
 - Verifica la conexión y estado de los sistemas
@@ -129,11 +129,4 @@ mkdir -p docs/images
 
 ## 📄 Licencia
 
-Este proyecto está bajo la Licencia MIT - ver el archivo [LICENSE](LICENSE) para más detalles.
-
-## 📞 Soporte
-
-Si tienes alguna pregunta o problema:
-- Abre un issue en GitHub
-- Envía un correo a [tu@email.com]
-- Consulta la [documentación completa](docs/README.md) 
+Este proyecto está bajo la Licencia MIT - ver el archivo [LICENSE](LICENSE) para más detalles. 

@@ -522,4 +522,140 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Cargar puertos al iniciar
     loadPorts();
+
+    // Lista de checksums CRC-16 para probar
+    const CRC_VARIANTS = [
+        { name: 'CRC-16/ARC', result: 'A5CB' },
+        { name: 'CRC-16/CDMA2000', result: '2AD2' },
+        { name: 'CRC-16/CMS', result: 'DD70' },
+        { name: 'CRC-16/DDS-110', result: 'D183' },
+        { name: 'CRC-16/DECT-R', result: 'E85A' },
+        { name: 'CRC-16/DECT-X', result: 'E85B' },
+        { name: 'CRC-16/DNP', result: '4081' },
+        { name: 'CRC-16/EN-13757', result: 'D63F' },
+        { name: 'CRC-16/GENIBUS', result: '5FFD' },
+        { name: 'CRC-16/GSM', result: '113E' },
+        { name: 'CRC-16/IBM-3740', result: 'A002' },
+        { name: 'CRC-16/IBM-SDLC', result: 'BA60' },
+        { name: 'CRC-16/ISO-IEC-14443-3-A', result: 'ED16' },
+        { name: 'CRC-16/KERMIT', result: '86ED' },
+        { name: 'CRC-16/LJ1200', result: 'F04F' },
+        { name: 'CRC-16/M17', result: '93A0' },
+        { name: 'CRC-16/MAXIM-DOW', result: '5A34' },
+        { name: 'CRC-16/MCRF4XX', result: '459F' },
+        { name: 'CRC-16/MODBUS', result: '1A8B' },
+        { name: 'CRC-16/NRSC-5', result: 'FB91' },
+        { name: 'CRC-16/OPENSAFETY-A', result: '8F63' },
+        { name: 'CRC-16/OPENSAFETY-B', result: '1698' },
+        { name: 'CRC-16/PROFIBUS', result: '5314' },
+        { name: 'CRC-16/RIELLO', result: '3455' },
+        { name: 'CRC-16/SPI-FUJITSU', result: '292D' },
+        { name: 'CRC-16/T10-DIF', result: '734C' },
+        { name: 'CRC-16/TELEDISK', result: '54B7' },
+        { name: 'CRC-16/TMS37157', result: '50B9' },
+        { name: 'CRC-16/UMTS', result: 'DF8D' },
+        { name: 'CRC-16/USB', result: 'E574' },
+        { name: 'CRC-16/XMODEM', result: 'EEC1' }
+    ];
+
+    let currentCRCIndex = 0;
+    let isTestRunning = false;
+    let testInterval = null;
+
+    // Función para enviar una trama con un checksum específico
+    async function sendFrameWithChecksum(checksum) {
+        const baseFrame = '7878108000A00000000504152414D23';
+        const frame = baseFrame + '0001' + checksum + '0D0A';
+        
+        try {
+            const response = await fetch('/api/send', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ 
+                    data: frame,
+                    isHex: true
+                })
+            });
+
+            if (!response.ok) throw new Error('Error al enviar la trama');
+            
+            appendMessage(`Enviando trama con ${CRC_VARIANTS[currentCRCIndex].name}`, 'text-blue-600');
+            appendMessage(`Trama: ${frame}`, 'text-blue-600');
+        } catch (error) {
+            appendMessage('Error al enviar la trama', 'text-red-600');
+            console.error('Error:', error);
+        }
+    }
+
+    // Función para ejecutar el test de CRC
+    function runCRCTest() {
+        if (currentCRCIndex >= CRC_VARIANTS.length) {
+            currentCRCIndex = 0;
+            if (!document.getElementById('loopTest').checked) {
+                stopTest();
+                return;
+            }
+        }
+
+        sendFrameWithChecksum(CRC_VARIANTS[currentCRCIndex].result);
+        currentCRCIndex++;
+    }
+
+    // Función para iniciar el test
+    function startTest() {
+        if (!isConnected) {
+            alert('Por favor conecte el puerto primero');
+            return;
+        }
+
+        isTestRunning = true;
+        document.getElementById('startStopTest').textContent = 'Detener Test';
+        document.getElementById('startStopTest').classList.replace('bg-green-500', 'bg-red-500');
+        
+        runCRCTest();
+        testInterval = setInterval(runCRCTest, 4000); // 4 segundos entre cada trama
+    }
+
+    // Función para detener el test
+    function stopTest() {
+        isTestRunning = false;
+        clearInterval(testInterval);
+        document.getElementById('startStopTest').textContent = 'Iniciar Test';
+        document.getElementById('startStopTest').classList.replace('bg-red-500', 'bg-green-500');
+    }
+
+    // Función para alternar el test
+    function toggleTest() {
+        if (isTestRunning) {
+            stopTest();
+        } else {
+            startTest();
+        }
+    }
+
+    // Agregar elementos de control al DOM
+    const controlsDiv = document.createElement('div');
+    controlsDiv.className = 'mb-4 p-4 bg-white rounded-lg shadow-lg';
+    controlsDiv.innerHTML = `
+        <h3 class="text-xl font-semibold mb-4">Test de Variantes CRC</h3>
+        <div class="flex items-center gap-4">
+            <button id="startStopTest" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
+                Iniciar Test
+            </button>
+            <label class="inline-flex items-center">
+                <input type="checkbox" id="loopTest" class="form-checkbox text-blue-600">
+                <span class="ml-2">Repetir continuamente</span>
+            </label>
+            <span id="currentVariant" class="text-gray-600"></span>
+        </div>
+    `;
+
+    // Insertar los controles después del primer div.mb-8
+    const firstSection = document.querySelector('div.mb-8');
+    firstSection.parentNode.insertBefore(controlsDiv, firstSection.nextSibling);
+
+    // Event listener para el botón de test
+    document.getElementById('startStopTest').addEventListener('click', toggleTest);
 }); 
